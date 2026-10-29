@@ -227,29 +227,44 @@ a { color: #4fc3f7; text-decoration: none; }
       <div id="sbList"></div>
       <button onclick="newStoryboard()">+ New Storyboard</button>
     </div>
-    <div class="program">
-      <div class="program-wrap">
-        <video id="programVideo" autoplay muted playsinline></video>
-        <div class="placeholder" id="placeholder">Select a source or cue a clip</div>
-        <div class="overlays">
-          <div class="lower-third" id="lowerThird"><div class="l1" id="lt1">Name</div><div class="l2" id="lt2">Title</div></div>
-          <img class="ots" id="ots" alt="">
-          <img class="bug" id="bug" alt="bug">
-          <div class="ticker" id="ticker"><div class="ticker-inner" id="tickerInner"></div></div>
-          <div class="testcard" id="testcard">TEST CARD</div>
+    <div class="program" style="display:flex;flex-direction:row;gap:12px;align-items:flex-start">
+      <!-- Preview -->
+      <div style="flex:1;min-width:0">
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px">Preview</div>
+        <div class="program-wrap">
+          <video id="previewVideo" autoplay muted playsinline></video>
+          <div class="placeholder" id="previewPlaceholder">Cue a source</div>
+          <div class="overlays" id="previewOverlays" style="opacity:0.6">
+            <div class="lower-third" id="previewLT"><div class="l1">Preview</div><div class="l2">Lower Third</div></div>
+          </div>
         </div>
       </div>
-      <div class="controls">
-        <div class="control-box">
-          <h3>Quick Take</h3>
-          <button class="primary" onclick="takeLive()">Take to Program</button>
-          <button onclick="toggleAutoPilot()">Auto-pilot: <span id="apStatus">ON</span></button>
+      <!-- Program / Live -->
+      <div style="flex:1;min-width:0">
+        <div style="font-size:0.75rem;color:var(--accent);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;font-weight:700">Live / Program</div>
+        <div class="program-wrap" style="border-color:var(--accent)">
+          <video id="programVideo" autoplay muted playsinline></video>
+          <div class="placeholder" id="placeholder">Nothing on air</div>
+          <div class="overlays">
+            <div class="lower-third" id="lowerThird"><div class="l1" id="lt1">Name</div><div class="l2" id="lt2">Title</div></div>
+            <img class="ots" id="ots" alt="">
+            <img class="bug" id="bug" alt="bug">
+            <div class="ticker" id="ticker"><div class="ticker-inner" id="tickerInner"></div></div>
+            <div class="testcard" id="testcard">TEST CARD</div>
+          </div>
         </div>
-        <div class="control-box">
-          <h3>Record</h3>
-          <button onclick="toggleRecord()" id="recBtn">● Record</button>
-          <div style="font-size:0.75rem;color:var(--muted);margin-top:4px">Local recording simulation</div>
-        </div>
+      </div>
+    </div>
+    <div class="controls" style="margin-top:10px">
+      <div class="control-box">
+        <h3>Take</h3>
+        <button class="primary" onclick="takeLive()">Take to Program</button>
+        <button onclick="toggleAutoPilot()">Auto-pilot: <span id="apStatus">ON</span></button>
+      </div>
+      <div class="control-box">
+        <h3>Record</h3>
+        <button onclick="toggleRecord()" id="recBtn">● Record</button>
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:4px">Local recording simulation</div>
       </div>
     </div>
   </div>
@@ -383,7 +398,10 @@ let channelName = "My Channel";
 const bc = new BroadcastChannel('characterdriven.live-studio');
 
 const programVideo = document.getElementById('programVideo');
+const previewVideo = document.getElementById('previewVideo');
 const placeholder = document.getElementById('placeholder');
+const previewPlaceholder = document.getElementById('previewPlaceholder');
+let previewSource = null;
 
 function setStatus(msg) {
   document.getElementById('status').textContent = msg;
@@ -431,12 +449,11 @@ function startCamera() {
   if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
   navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then(stream => {
     mediaStream = stream;
-    programVideo.srcObject = stream;
-    programVideo.style.display = 'block';
-    placeholder.style.display = 'none';
-    document.getElementById('onAir').classList.add('active');
-    setStatus('Webcam live');
-    broadcast({ type: 'source', kind: 'webcam' });
+    previewVideo.srcObject = stream;
+    previewVideo.style.display = 'block';
+    previewPlaceholder.style.display = 'none';
+    previewSource = { kind: 'webcam', stream };
+    setStatus('Webcam cued in Preview');
   }).catch(() => setStatus('Camera unavailable'));
 }
 
@@ -472,21 +489,35 @@ function selectSource(el) {
 }
 function selectClip(clip) {
   document.querySelectorAll('.source-item').forEach(s => s.classList.remove('active'));
-  programVideo.srcObject = null;
-  programVideo.src = clip.url;
-  programVideo.play().catch(()=>{});
-  programVideo.style.display = 'block';
-  placeholder.style.display = 'none';
-  document.getElementById('onAir').classList.add('active');
+  previewVideo.srcObject = null;
+  previewVideo.src = clip.url;
+  previewVideo.play().catch(()=>{});
+  previewVideo.style.display = 'block';
+  previewPlaceholder.style.display = 'none';
+  previewSource = { kind: 'clip', clip };
   currentSource = clip;
-  setStatus('Playing: ' + clip.name);
-  broadcast({ type: 'source', kind: 'clip', name: clip.name });
+  setStatus('Cued in Preview: ' + clip.name);
 }
 function cueClip(id) {
   const c = clips.find(x => x.id == id);
   if (c) selectClip(c);
 }
-function takeLive() { setStatus('Take executed (source already on Program)'); }
+function takeLive() {
+  if (!previewSource) { setStatus('Nothing cued in Preview'); return; }
+  if (previewSource.kind === 'webcam') {
+    programVideo.srcObject = previewSource.stream;
+    programVideo.src = '';
+  } else if (previewSource.kind === 'clip') {
+    programVideo.srcObject = null;
+    programVideo.src = previewSource.clip.url;
+    programVideo.play().catch(()=>{});
+  }
+  programVideo.style.display = 'block';
+  placeholder.style.display = 'none';
+  document.getElementById('onAir').classList.add('active');
+  setStatus('Taken to Program');
+  broadcast({ type: 'source', kind: previewSource.kind, name: previewSource.clip ? previewSource.clip.name : 'webcam' });
+}
 
 function showLT() {
   document.getElementById('lt1').textContent = document.getElementById('ltInput1').value || ' ';
