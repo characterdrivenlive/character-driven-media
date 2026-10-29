@@ -100,35 +100,38 @@ body {
   color: #999; font-size: 0.85rem; background: #1a1a1a;
 }
 .source-item {
-  background: linear-gradient(180deg, #ff7eb3 0%, #ff5a8a 40%, #ff7a45 100%);
+  background: linear-gradient(135deg, #ff6b9d 0%, #e91e63 50%, #ff7a45 100%);
   color: white;
-  padding: 6px 8px;
-  margin-bottom: 8px;
-  border-radius: 8px;
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-size: 0.82rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 6px rgba(233,30,99,0.25);
   cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.3);
 }
 .source-item .thumb {
-  width: 72px; height: 48px;
-  border-radius: 4px;
-  background: #333;
+  width: 96px; height: 64px;
+  border-radius: 8px;
+  background: #222;
   object-fit: cover;
   flex-shrink: 0;
-  border: 1px solid rgba(255,255,255,0.4);
+  border: 2px solid rgba(255,255,255,0.6);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 .source-item .meta { flex: 1; min-width: 0; }
-.source-item .title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.source-item .dur { font-size: 0.72rem; opacity: 0.9; }
+.source-item .title { font-weight: 700; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.source-item .dur { font-size: 0.75rem; opacity: 0.95; margin-top: 2px; }
 .source-item button {
-  background: #fff; color: var(--pink); border: none;
-  padding: 4px 12px; border-radius: 12px; cursor: pointer;
-  font-weight: bold; font-size: 0.75rem; flex-shrink: 0;
+  background: #fff; color: #e91e63; border: none;
+  padding: 6px 14px; border-radius: 16px; cursor: pointer;
+  font-weight: bold; font-size: 0.8rem; flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
-.source-item button:hover { background: #ffe6ee; }
+.source-item button:hover { background: #ffe6ee; transform: scale(1.05); }
 .overlays {
   background: #fff;
   border: 1px solid var(--border);
