@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CharacterDriven.live Viewer</title>
+<style>
+:root { --accent: #cf202e; --bg: #0d0d0d; --text: #f5f5f7; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; padding: 16px; min-height: 100vh; }
+header { width: 100%; max-width: 960px; display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+h1 { color: var(--accent); font-size: 1.3rem; }
+.on-air { background: var(--accent); padding: 2px 8px; border-radius: 3px; font-size: 0.75rem; display: none; }
+.player { position: relative; width: 100%; max-width: 960px; aspect-ratio: 16/9; background: #111; border: 2px solid #333; border-radius: 6px; overflow: hidden; }
+.placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #666; text-align: center; padding: 20px; }
+.overlays { position: absolute; inset: 0; pointer-events: none; }
+.lower-third { position: absolute; bottom: 32px; left: 16px; background: rgba(0,0,0,0.8); padding: 8px 14px; border-left: 4px solid var(--accent); max-width: 55%; display: none; }
+.lower-third.show { display: block; }
+.ticker { position: absolute; bottom: 0; left: 0; right: 0; height: 26px; background: #111; color: #ffeb3b; overflow: hidden; display: none; font-weight: 600; line-height: 26px; }
+.ticker.show { display: block; }
+.ticker-inner { display: inline-block; white-space: nowrap; padding-left: 100%; animation: scroll 20s linear infinite; }
+@keyframes scroll { to { transform: translateX(-100%); } }
+.chat { width: 100%; max-width: 960px; margin-top: 12px; background: #1c1c1e; border-radius: 6px; padding: 10px; max-height: 180px; overflow-y: auto; font-size: 0.9rem; }
+.chat-input { display: flex; gap: 6px; margin-top: 8px; }
+input { flex: 1; padding: 6px; background: #2c2c2e; border: 1px solid #444; color: white; border-radius: 4px; }
+button { padding: 6px 12px; background: var(--accent); color: white; border: none; border-radius: 4px; cursor: pointer; }
+.status { margin-top: 8px; font-size: 0.8rem; color: #888; }
+a { color: #4fc3f7; }
+</style>
+</head>
+<body>
+<header>
+  <h1>CharacterDriven.live</h1>
+  <span id="channelName">My Channel</span>
+  <span class="on-air" id="onAir">● LIVE</span>
+</header>
+<div class="player">
+  <div class="placeholder" id="placeholder">Waiting for Studio…<br><small>Open the Studio in another tab and go live.</small></div>
+  <div class="overlays">
+    <div class="lower-third" id="lowerThird"><div class="l1" id="lt1"></div><div class="l2" id="lt2"></div></div>
+    <div class="ticker" id="ticker"><div class="ticker-inner" id="tickerInner"></div></div>
+  </div>
+</div>
+<div class="chat" id="chatLog"><div style="color:#666">Chat (BroadcastChannel multi-user sketch)</div></div>
+<div class="chat-input">
+  <input id="chatInput" placeholder="Say something..." onkeydown="if(event.key==='Enter')send()">
+  <button onclick="send()">Send</button>
+</div>
+<div class="status" id="status">Connecting…</div>
+<p style="margin-top:12px;font-size:0.75rem;color:#555"><a href="index.html">← Back to Studio</a></p>
+<script>
+const bc = new BroadcastChannel('characterdriven.live-studio');
+function setStatus(m) { document.getElementById('status').textContent = m; }
+bc.onmessage = (ev) => {
+  const m = ev.data; if (!m) return;
+  if (m.type === 'channel') document.getElementById('channelName').textContent = m.name || 'Channel';
+  if (m.type === 'status') setStatus(m.msg);
+  if (m.type === 'source') {
+    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('onAir').style.display = 'inline-block';
+    setStatus(m.kind === 'webcam' ? 'Live camera' : 'Playing: ' + (m.name || 'clip'));
+  }
+  if (m.type === 'lowerThird') {
+    const el = document.getElementById('lowerThird');
+    if (m.show) {
+      document.getElementById('lt1').textContent = m.line1 || '';
+      document.getElementById('lt2').textContent = m.line2 || '';
+      el.classList.add('show');
+    } else el.classList.remove('show');
+  }
+  if (m.type === 'ticker') {
+    const el = document.getElementById('ticker');
+    if (m.show) {
+      document.getElementById('tickerInner').textContent = (m.text || '') + ' • ' + (m.text || '') + ' • ';
+      el.classList.add('show');
+    } else el.classList.remove('show');
+  }
+  if (m.type === 'chat' && m.from === 'Studio') {
+    const d = document.createElement('div');
+    d.textContent = 'Studio: ' + m.text;
+    document.getElementById('chatLog').appendChild(d);
+  }
+};
+function send() {
+  const inp = document.getElementById('chatInput');
+  const text = inp.value.trim(); if (!text) return;
+  const d = document.createElement('div');
+  d.textContent = 'You: ' + text;
+  document.getElementById('chatLog').appendChild(d);
+  bc.postMessage({ type: 'chat', text, from: 'Viewer' });
+  inp.value = '';
+}
+try {
+  const s = JSON.parse(localStorage.getItem('characterdriven.live-state') || '{}');
+  if (s.channelName) document.getElementById('channelName').textContent = s.channelName;
+} catch(e) {}
+setStatus('Viewer ready — open Studio in another tab');
+</script>
+</body>
+</html>
