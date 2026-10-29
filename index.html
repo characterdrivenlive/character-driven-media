@@ -263,13 +263,13 @@ button.primary:hover { background: #c2185b; }
   <!-- Library -->
   <div class="panel" id="panel-library">
     <div class="sidebar">
-      <h3 style="color:var(--pink)">Storyboards</h3>
+      <h3 style="color:var(--pink);margin-bottom:8px">Storyboards</h3>
       <div id="sbList"></div>
-      <button onclick="newStoryboard()" style="margin-top:8px">+ New Storyboard</button>
+      <button onclick="newStoryboard()" style="margin-top:10px;width:100%">+ New Storyboard</button>
     </div>
     <div class="center">
-      <h3>Manage Library</h3>
-      <div id="libraryView" style="margin-top:12px"></div>
+      <h3 style="margin-bottom:8px">Manage Library</h3>
+      <div id="libraryView"></div>
     </div>
   </div>
 
@@ -351,6 +351,7 @@ document.querySelectorAll('.tab').forEach(t => {
     document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
     t.classList.add('active');
     document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+    if (t.dataset.tab === 'library') { renderLibrary(); renderStoryboards(); }
   };
 });
 document.querySelectorAll('.otab').forEach(t => {
@@ -497,9 +498,36 @@ function stopStream() {
   document.getElementById('apStatus').textContent = autoPilot ? 'ON' : 'OFF';
   setStatus('Auto-pilot ' + (autoPilot ? 'on' : 'off'));
 }
-function newStoryboard() {
-  const name = prompt('Storyboard name:');
-  if (name) { storyboards.push({name, items:[]}); setStatus('Created: ' + name); }
+function renderLibrary() {
+  const view = document.getElementById('libraryView');
+  view.innerHTML = '';
+  if (clips.length === 0) {
+    view.innerHTML = '<p style="color:#999">No clips yet. Upload from Broadcast Live.</p>';
+    return;
+  }
+  clips.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'source-item';
+    row.style.marginBottom = '8px';
+    row.innerHTML = `
+      <video class="thumb" muted playsinline src="${c.url}"></video>
+      <div class="meta"><div class="title">${c.name}</div><div class="dur">Clip</div></div>
+      <span style="font-size:0.75rem;opacity:0.9;margin-right:8px">--:--</span>
+      <button onclick="event.stopPropagation(); cueClip('${c.id}')">Cue</button>`;
+    row.onclick = () => selectClip(c);
+    view.appendChild(row);
+  });
+}
+function renderStoryboards() {
+  const list = document.getElementById('sbList');
+  list.innerHTML = '';
+  storyboards.forEach((sb, i) => {
+    const d = document.createElement('div');
+    d.style.cssText = 'padding:6px 10px;background:#4fc3f7;color:white;border-radius:4px;margin-bottom:4px;cursor:pointer;font-size:0.85rem';
+    d.textContent = sb.name;
+    d.onclick = () => { currentSB = i; setStatus('Selected: ' + sb.name); };
+    list.appendChild(d);
+  });
 }
 renderSources();
 setStatus('CharacterDriven.live Studio ready');
