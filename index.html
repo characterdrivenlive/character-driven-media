@@ -164,6 +164,7 @@ button.primary:hover { background: var(--pink-dark); }
     <div class="tab active" data-tab="live">Broadcast Live</div>
     <div class="tab" data-tab="autopilot">Control Auto-pilot</div>
     <div class="tab" data-tab="vod">Video On-Demand</div>
+    <div class="tab" data-tab="stream">Stream</div>
     <div class="tab" data-tab="player">Get Player Widget</div>
   </div>
   <div style="margin-left:auto;font-size:0.8rem;color:#666" id="status">Ready</div>
@@ -258,7 +259,41 @@ button.primary:hover { background: var(--pink-dark); }
     </div>
   </div>
 
-  <!-- Other panels (stubs) -->
+  <!-- Stream -->
+  <div class="panel" id="panel-stream">
+    <div class="center" style="padding:20px;max-width:700px">
+      <h3 style="color:var(--pink);margin-bottom:12px">Stream Destinations</h3>
+      <p style="color:#666;margin-bottom:16px;font-size:0.9rem">Enter RTMP stream keys. When a backend relay is connected, clicking Go Live will push the Program output to the selected platforms.</p>
+
+      <div class="overlays" style="margin-bottom:12px">
+        <h4 style="margin-bottom:6px">YouTube</h4>
+        <input id="ytKey" placeholder="YouTube Stream Key" style="width:100%">
+        <label style="font-size:0.8rem;color:#666"><input type="checkbox" id="ytEnable" checked> Enable</label>
+      </div>
+
+      <div class="overlays" style="margin-bottom:12px">
+        <h4 style="margin-bottom:6px">Facebook</h4>
+        <input id="fbKey" placeholder="Facebook Stream Key" style="width:100%">
+        <label style="font-size:0.8rem;color:#666"><input type="checkbox" id="fbEnable"> Enable</label>
+      </div>
+
+      <div class="overlays" style="margin-bottom:12px">
+        <h4 style="margin-bottom:6px">Rumble</h4>
+        <input id="rumbleKey" placeholder="Rumble Stream Key" style="width:100%">
+        <label style="font-size:0.8rem;color:#666"><input type="checkbox" id="rumbleEnable"> Enable</label>
+      </div>
+
+      <button class="primary" onclick="goLive()" id="goLiveBtn">Go Live</button>
+      <button onclick="stopStream()" style="margin-left:8px">Stop</button>
+      <div class="status" id="streamStatus" style="margin-top:10px">Not streaming</div>
+
+      <div style="margin-top:20px;padding:12px;background:#fff3cd;border-radius:4px;font-size:0.85rem;color:#856404">
+        <strong>Note:</strong> True RTMP output requires a small backend relay (FFmpeg on Railway). The keys are saved locally. Once the relay is connected, Go Live will push the Program feed to the enabled destinations.
+      </div>
+    </div>
+  </div>
+
+  <!-- Player -->
   <div class="panel" id="panel-channel">
     <div class="center" style="padding:20px"><h3>Configure Channel</h3><p style="color:#666;margin-top:8px">Channel page styling (banner, layout, colors) — coming next.</p></div>
   </div>
@@ -403,7 +438,29 @@ function applyStyle() {
   document.documentElement.style.setProperty('--accent', color);
   setStatus('Style applied: ' + name);
 }
-function toggleAutoPilot() {
+function goLive() {
+  const dests = [];
+  if (document.getElementById('ytEnable').checked && document.getElementById('ytKey').value) dests.push('YouTube');
+  if (document.getElementById('fbEnable').checked && document.getElementById('fbKey').value) dests.push('Facebook');
+  if (document.getElementById('rumbleEnable').checked && document.getElementById('rumbleKey').value) dests.push('Rumble');
+  if (dests.length === 0) { setStatus('Enter at least one stream key'); return; }
+  document.getElementById('streamStatus').textContent = 'Preparing stream to: ' + dests.join(', ');
+  document.getElementById('goLiveBtn').textContent = '● LIVE';
+  document.getElementById('goLiveBtn').style.background = '#c2185b';
+  setStatus('Stream started (backend relay required for actual output)');
+  // Keys stored locally for when backend is added
+  localStorage.setItem('cd-stream-keys', JSON.stringify({
+    yt: document.getElementById('ytKey').value,
+    fb: document.getElementById('fbKey').value,
+    rumble: document.getElementById('rumbleKey').value
+  }));
+}
+function stopStream() {
+  document.getElementById('streamStatus').textContent = 'Stopped';
+  document.getElementById('goLiveBtn').textContent = 'Go Live';
+  document.getElementById('goLiveBtn').style.background = '';
+  setStatus('Stream stopped');
+}
   autoPilot = !autoPilot;
   document.getElementById('apStatus').textContent = autoPilot ? 'ON' : 'OFF';
   setStatus('Auto-pilot ' + (autoPilot ? 'on' : 'off'));
