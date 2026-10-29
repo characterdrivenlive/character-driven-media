@@ -221,7 +221,8 @@ a { color: #4fc3f7; text-decoration: none; }
           <button class="primary" style="width:auto;padding:2px 8px" onclick="event.stopPropagation(); startCamera()">Start</button>
         </div>
       </div>
-      <button onclick="document.getElementById('fileInput').click()" style="margin-top:8px">+ Upload Clip</button>
+      <button onclick="addCamera()" style="margin-top:8px">+ Add Camera</button>
+      <button onclick="document.getElementById('fileInput').click()" style="margin-top:4px">+ Upload Clip</button>
       <input type="file" id="fileInput" accept="video/*" style="display:none" onchange="addClip(this)">
       <h3 style="margin:16px 0 8px;color:var(--accent)">Storyboards</h3>
       <div id="sbList"></div>
@@ -445,16 +446,47 @@ document.querySelectorAll('.tab').forEach(t => {
   };
 });
 
+let cameras = [];
+let mediaStream = null;
+
+async function addCamera() {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const videoDevices = devices.filter(d => d.kind === 'videoinput');
+    if (videoDevices.length === 0) { setStatus('No cameras found'); return; }
+    const unused = videoDevices.find(d => !cameras.some(c => c.deviceId === d.deviceId));
+    if (!unused) { setStatus('All cameras already added'); return; }
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: unused.deviceId } }, audio: false });
+    const cam = { id: Date.now(), name: unused.label || 'Camera ' + (cameras.length + 1), deviceId: unused.deviceId, stream };
+    cameras.push(cam);
+    renderSources();
+    setStatus('Added: ' + cam.name);
+  } catch (e) {
+    setStatus('Camera access denied or unavailable');
+  }
+}
+
 function startCamera() {
-  if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
-  navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then(stream => {
-    mediaStream = stream;
-    previewVideo.srcObject = stream;
+  // Legacy single-camera button — adds default camera if none exist
+  if (cameras.length === 0) addCamera();
+  else {
+    const cam = cameras[0];
+    previewVideo.srcObject = cam.stream;
     previewVideo.style.display = 'block';
     previewPlaceholder.style.display = 'none';
-    previewSource = { kind: 'webcam', stream };
-    setStatus('Webcam cued in Preview');
-  }).catch(() => setStatus('Camera unavailable'));
+    previewSource = { kind: 'webcam', stream: cam.stream, name: cam.name };
+    setStatus('Cued: ' + cam.name);
+  }
+}
+
+function cueCamera(id) {
+  const cam = cameras.find(c => c.id == id);
+  if (!cam) return;
+  previewVideo.srcObject = cam.stream;
+  previewVideo.style.display = 'block';
+  previewPlaceholder.style.display = 'none';
+  previewSource = { kind: 'webcam', stream: cam.stream, name: cam.name };
+  setStatus('Cued in Preview: ' + cam.name);
 }
 
 function addClip(input) {
@@ -470,9 +502,16 @@ function addClip(input) {
 
 function renderSources() {
   const list = document.getElementById('sourcesList');
-  const webcam = list.querySelector('[data-type="webcam"]');
   list.innerHTML = '';
-  if (webcam) list.appendChild(webcam);
+  // Cameras
+  cameras.forEach(cam => {
+    const d = document.createElement('div');
+    d.className = 'source-item';
+    d.innerHTML = `<span>📷 ${cam.name}</span><button class="primary" style="width:auto;padding:2px 8px" onclick="event.stopPropagation(); cueCamera(${cam.id})">Cue</button>`;
+    d.onclick = () => cueCamera(cam.id);
+    list.appendChild(d);
+  });
+  // Clips
   clips.forEach(c => {
     const d = document.createElement('div');
     d.className = 'source-item';
@@ -480,6 +519,9 @@ function renderSources() {
     d.onclick = () => selectClip(c);
     list.appendChild(d);
   });
+  if (cameras.length === 0 && clips.length === 0) {
+    list.innerHTML = '<div style="color:#666;font-size:0.85rem">No sources yet</div>';
+  }
 }
 
 function selectSource(el) {
@@ -516,7 +558,7 @@ function takeLive() {
   placeholder.style.display = 'none';
   document.getElementById('onAir').classList.add('active');
   setStatus('Taken to Program');
-  broadcast({ type: 'source', kind: previewSource.kind, name: previewSource.clip ? previewSource.clip.name : 'webcam' });
+  broadcast({ type: 'source', kind: previewSource.kind, name: previewSource.name || (previewSource.clip ? previewSource.clip.name : 'webcam') });
 }
 
 function showLT() {
