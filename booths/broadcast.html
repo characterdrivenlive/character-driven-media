@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Broadcast Booth · TEST</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="booth.css"><style>body{margin:0}</style></head>
+<body>
+<div class="wrap">
+  <div class="banner startbar">
+    <span><b>TEST version.</b> Real microphone, music and recording in this browser. Not connected to the station, guests, PartyLine or the server.</span>
+    <button class="chip cy" id="start">Start sound</button>
+  </div>
+
+  <header class="top">
+    <div class="brand"><div class="logo" aria-hidden="true">CD</div>
+      <div><div class="room">Character Driven Studio · Broadcast Booth</div><div class="show" id="show">Test show</div></div></div>
+    <nav class="rooms" role="tablist" aria-label="Booth rooms">
+      <button class="room-tab" role="tab" aria-selected="true" data-room="console" id="t-console"><span class="lamp"></span>Console</button>
+      <button class="room-tab" role="tab" aria-selected="false" data-room="backstage" id="t-backstage"><span class="lamp"></span>Backstage</button>
+      <button class="room-tab" role="tab" aria-selected="false" data-room="library" id="t-library"><span class="lamp"></span>Library</button>
+      <button class="room-tab" role="tab" aria-selected="false" aria-disabled="true"><span class="lamp"></span>Auto-pilot <span class="soon">soon</span></button>
+    </nav>
+    <div class="pills" aria-label="Booth status">
+      <span class="pill"><span class="dot" id="p-sound-dot"></span><span id="p-sound">Sound off</span></span>
+      <span class="pill"><span class="dot" id="p-station-dot"></span><span id="p-station">Station: TEST, not connected</span></span>
+      <a class="icon-btn" href="./" aria-label="Leave booth" title="Leave booth" style="text-decoration:none;color:inherit">⎋</a>
+    </div>
+  </header>
+
+  <section id="room-console" class="console">
+    <aside class="rail" aria-label="Sources">
+      <div class="src-tabs" role="tablist" aria-label="Source list">
+        <button class="src-tab" role="tab" aria-selected="true" data-src="voices">Voices</button>
+        <button class="src-tab" role="tab" aria-selected="false" data-src="media">Media</button>
+      </div>
+      <div class="list" data-srclist="voices">
+        <div class="src" id="src-host"><span class="num">1</span><span class="name">Host mic</span><span class="tally" id="host-tally">OFF</span><span class="sub" id="host-sub">Not connected</span></div>
+        <button class="chip cy" id="connect-mic">Connect microphone</button>
+        <div class="src"><span class="num">2</span><span class="name">Guest</span><span class="tag-na">NOT IN TEST</span><span class="sub">Guests need the live booth</span></div>
+        <div class="src"><span class="num">3</span><span class="name">Telephone</span><span class="tag-na">NOT IN TEST</span><span class="sub">Phone line needs the live booth</span></div>
+      </div>
+      <div class="list" data-srclist="media" hidden>
+        <div class="src"><span class="num">A</span><span class="name" id="rail-A">Deck A</span><span class="tally" id="tal-A">EMPTY</span><span class="sub">Load in Music</span></div>
+        <div class="src"><span class="num">B</span><span class="name" id="rail-B">Deck B</span><span class="tally" id="tal-B">EMPTY</span><span class="sub">Load in Music</span></div>
+        <div class="src"><span class="num">C</span><span class="name" id="rail-C">Deck C</span><span class="tally" id="tal-C">EMPTY</span><span class="sub">Load in Music</span></div>
+        <div class="src"><span class="num">D</span><span class="name" id="rail-D">Deck D</span><span class="tally" id="tal-D">EMPTY</span><span class="sub">Load in Music</span></div>
+        <div class="src"><span class="num">♪</span><span class="name" id="rail-bed">Music Bed</span><span class="tally" id="tal-bed">EMPTY</span><span class="sub">Loops under talk</span></div>
+      </div>
+      <p class="mini">You hear the booth only after you confirm headphones. This stops the microphone from howling through speakers.</p>
+    </aside>
+
+    <div class="stage">
+      <div class="monitors">
+        <div class="mon cue">
+          <div class="mon-head"><span class="mon-label">Cue · your headphones</span><span class="tally cue" id="cue-tag">MIX</span></div>
+          <div class="mon-screen">
+            <div class="now" id="cue-now">Headphones not confirmed</div>
+            <div class="meter-row"><span>L</span><span class="seg"><i id="cue-l"></i></span><span id="cue-l-db">—</span></div>
+            <div class="meter-row"><span>R</span><span class="seg"><i id="cue-r"></i></span><span id="cue-r-db">—</span></div>
+          </div>
+        </div>
+        <div class="mon air" id="mon-air">
+          <div class="mon-head"><span class="mon-label">On air · station feed</span><span class="tally" id="air-tally">MONO</span></div>
+          <div class="mon-screen">
+            <div class="now" id="air-now">Station programming</div>
+            <div class="station-word" id="air-word">TEST: the station is not connected, so its feed can't be shown here.</div>
+            <div class="meter-row"><span>M</span><span class="seg"><i id="air-m"></i></span><span id="air-db">—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tx" aria-label="Transmission">
+        <button class="airbtn" id="b-air" data-state="off"><span class="lampbig" aria-hidden="true"></span><span class="word">OFF AIR</span><span class="hint">Press to get ready</span><span class="fill"></span></button>
+        <div class="timer" aria-live="polite"><span>On air <b id="t-on">00:00</b></span><span>Window left <span id="t-left">60:00</span></span></div>
+        <div class="checks" aria-label="Ready checks">
+          <span class="check" id="chk-mic" aria-pressed="false">Mic ✕</span>
+          <button class="check" id="chk-phones" aria-pressed="false">Headphones? tap to confirm</button>
+          <span class="check" aria-pressed="true">Station link (TEST) ✓</span>
+        </div>
+        <span class="spacer"></span>
+        <button class="big rec" id="b-rec" aria-pressed="false">Record</button>
+      </div>
+
+      <div class="tools" role="group" aria-label="Console tools">
+        <button class="tool" aria-pressed="true" data-tool="mixing"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 3v18M12 3v18M18 3v18"/><rect x="3.5" y="13" width="5" height="3" rx="1" fill="currentColor"/><rect x="9.5" y="7" width="5" height="3" rx="1" fill="currentColor"/><rect x="15.5" y="15" width="5" height="3" rx="1" fill="currentColor"/></svg>Mixing</button>
+        <button class="tool" aria-pressed="false" data-tool="music"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>Music</button>
+        <button class="tool" aria-pressed="false" data-tool="comms"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg>Communication</button>
+        <button class="tool" aria-pressed="false" data-tool="audience"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="9" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c.8-3.5 3.2-5 6-5s5.2 1.5 6 5M15 15.5c2.6 0 4.6 1.4 5.3 4.5"/></svg>Audience</button>
+      </div>
+
+      <section class="drawer" data-panel="mixing">
+        <div class="drawer-head"><h2>Mixing</h2><button class="x" aria-label="Close tools">✕</button></div>
+        <div class="strips" id="strips"></div>
+        <div class="legend">Ensemble-style board · meters show real signal (RMS) · SOLO changes only what you hear, never the recording · station output would be mono.</div>
+      </section>
+
+      <section class="drawer" data-panel="music" hidden>
+        <div class="drawer-head"><h2>Music</h2><button class="x" aria-label="Close tools">✕</button></div>
+        <div class="decks" id="decks"></div>
+        <div class="xfade"><span>A</span><input type="range" id="xf" min="0" max="1" step="0.01" value="0.5" aria-label="Crossfader A to B" style="width:100%"><span>B</span></div>
+        <div class="list">
+          <div class="item deck" id="bed-card" style="grid-template-columns:1fr auto auto auto"><div><div class="t">Music Bed · empty</div><div class="mini">Loops · load a file</div><input type="file" accept="audio/*" aria-label="Load Music Bed"></div>
+            <button class="sq" data-act="play" aria-label="Play Music Bed">▶</button><button class="sq" data-act="stop" aria-label="Stop Music Bed">■</button><button class="ring mute" aria-pressed="false" aria-label="Mute Music Bed">MUTE</button></div>
+          <div class="item"><div><div class="k">Stop all music</div><div class="v">Stops every deck and the Music Bed</div></div><button class="chip" id="stop-all">Stop all</button></div>
+        </div>
+      </section>
+
+      <section class="drawer" data-panel="comms" hidden>
+        <div class="drawer-head"><h2>Communication</h2><button class="x" aria-label="Close tools">✕</button></div>
+        <div class="list">
+          <div class="item"><div><div class="k">PartyLine, Messaging, Cues, Green Room</div><div class="v">These need the live booth and are not part of this TEST version.</div></div><span class="tag-na">NOT IN TEST</span></div>
+        </div>
+      </section>
+
+      <section class="drawer" data-panel="audience" hidden>
+        <div class="drawer-head"><h2>Audience</h2><button class="x" aria-label="Close tools">✕</button></div>
+        <div class="list">
+          <div class="item"><div><div class="k">Listen link</div><div class="v">characterdriven.live/listen</div></div><button class="chip" id="copy-listen">Copy</button></div>
+          <div class="item"><div><div class="k">Station listener, events, booking window</div><div class="v">Need the live station connection.</div></div><span class="tag-na">NOT IN TEST</span></div>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <section id="room-backstage" class="cols" hidden>
+    <div class="sect"><h3>Sound and devices</h3><p>Choose your microphone. The booth records it clean: no echo cancelling, noise removal or automatic level.</p>
+      <select class="dev" id="dev" aria-label="Microphone"><option value="">Default microphone</option></select>
+      <button class="chip cy" id="dev-apply">Use this microphone</button></div>
+    <div class="sect"><h3>Ensemble board</h3><p>Show limiter at about −1 dBFS is always on. Glue Mix and mic models are in the Editing Studio TEST.</p></div>
+    <div class="sect"><h3>Station connection</h3><p>Not connected in TEST. Going on air here never reaches the station.</p><span class="tag-na">NOT IN TEST</span></div>
+  </section>
+
+  <section id="room-library" class="cols" hidden>
+    <div class="sect" style="grid-column:1/-1"><h3>Recordings from this visit</h3><p>WAV files (48 kHz / 24-bit) kept in this browser tab until you download them. Nothing is uploaded.</p><div class="recs" id="recs"><p class="mini">No recordings yet.</p></div></div>
+  </section>
+
+  <footer class="status" aria-live="polite">
+    <span class="state off" id="s-air">OFF AIR</span>
+    <span class="state off" id="s-rec">RECORDING OFF</span>
+    <span>Master: <b id="s-master">—</b></span>
+    <span>Server copy: <b>— (not in TEST)</b></span>
+    <span class="legend" style="margin-left:auto">Green = Ready · Red = On air or recording · Amber = needs attention</span>
+  </footer>
+</div>
+<script src="engine.js"></script>
+<script src="room-common.js"></script>
+<script>
+(function(){
+  const {Engine,Deck,renderStrips,stateButton,seg,fmtDb,fmtTime,$}=CDB;
+  const R=CDRoom.setup({decks:['A','B','C','D'], bed:true, extra:[{id:'guest',name:'Guest',available:false},{id:'tel',name:'Telephone',available:false}], masterName:'Station master'});
+  const e=R.engine;
+  // On Air state button (TEST relay only)
+  let since=0,tick=null;
+  const air=stateButton($('#b-air'),{initial:'off',states:{
+    off:{word:'OFF AIR',hint:'Press to get ready',look:'off',onTap:a=>a.set(R.checksOk()?'ready':'blocked')},
+    blocked:{word:'NOT READY',hint:'Connect a microphone, speak, and confirm headphones',look:'blocked',onTap:a=>a.set(R.checksOk()?'ready':'blocked')},
+    ready:{word:'READY',hint:'Hold to go on air · press to stand down',look:'ready',onTap:a=>a.set('off'),onHold:a=>{since=Date.now();tick=setInterval(clock,1000);a.set('air')}},
+    air:{word:'ON AIR',hint:'Hold to return to station',look:'air',onTap:a=>a.set('air','Hold to return to station'),onHold:a=>{clearInterval(tick);a.set('off');clock()}}
+  },onEnter:s=>{
+    document.body.classList.toggle('is-on-air',s==='air');
+    const sa=$('#s-air');sa.className='state '+(s==='air'?'air':s==='ready'?'rdy':'off');sa.textContent=s==='air'?'ON AIR (TEST)':s==='ready'?'READY':'OFF AIR';
+    $('#mon-air').classList.toggle('is-live',s==='air');
+    $('#air-tally').className='tally'+(s==='air'?' live':'');$('#air-tally').textContent=s==='air'?'ON AIR · MONO (TEST)':'MONO';
+    $('#air-now').textContent=s==='air'?'Broadcast Booth (TEST)':'Station programming';
+    $('#air-word').textContent=s==='air'?'TEST: this is what would go to the station. Nothing is sent.':s==='ready'?'Checks passed. Hold the On Air button to take over (TEST only).':'TEST: the station is not connected, so its feed can’t be shown here.';
+    $('#p-station').textContent=s==='air'?'Station: TEST on air, nothing sent':'Station: TEST, not connected';$('#p-station-dot').className='dot '+(s==='air'?'r':'');
+  }});
+  R.onChecks=()=>{ if(!R.checksOk()&&air.state==='ready') air.set('off'); };
+  function clock(){const s=air.state==='air'?Math.floor((Date.now()-since)/1000):0;$('#t-on').textContent=fmtTime(s);$('#t-left').textContent=fmtTime(Math.max(0,3600-s))}
+  e.meterHooks.push(x=>{ if(air.state==='air'){seg($('#air-m'),x.masterLevel);$('#air-db').textContent=fmtDb(x.masterLevel)} else {seg($('#air-m'),null);$('#air-db').textContent='—'} });
+  R.simpleRecord($('#b-rec'),$('#s-rec'));
+})();
+</script>
+</body></html>

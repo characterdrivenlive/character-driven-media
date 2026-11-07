@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Editing Studio · TEST</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="booth.css"><style>body{margin:0}.wave{cursor:pointer}</style></head>
+<body>
+<div class="wrap">
+  <div class="banner startbar">
+    <span><b>TEST version.</b> Load audio files from your computer, mix them on the board and export a 24-bit WAV. Work lasts only in this tab. The archive of stored recordings is not connected.</span>
+    <label class="chip cy" for="files" style="cursor:pointer">Add audio files</label>
+    <input type="file" id="files" accept="audio/*" multiple hidden>
+  </div>
+
+  <header class="top">
+    <div class="brand"><div class="logo" aria-hidden="true">CD</div>
+      <div><div class="room">Character Driven Studio · Editing Studio</div><div class="show" id="proj">No tracks loaded</div></div></div>
+    <nav class="rooms" role="tablist" aria-label="Studio rooms">
+      <button class="room-tab" role="tab" aria-selected="true" data-room="console" id="t-console"><span class="lamp"></span>Console</button>
+      <button class="room-tab" role="tab" aria-selected="false" data-room="backstage" id="t-backstage"><span class="lamp"></span>Backstage</button>
+      <button class="room-tab" role="tab" aria-selected="false" data-room="library" id="t-library"><span class="lamp"></span>Library</button>
+      <button class="room-tab" role="tab" aria-selected="false" aria-disabled="true"><span class="lamp"></span>Auto-pilot <span class="soon">soon</span></button>
+    </nav>
+    <div class="pills" aria-label="Studio status">
+      <span class="pill"><span class="dot a"></span>Work lasts in this tab only</span>
+      <a class="icon-btn" href="./" aria-label="Leave studio" title="Leave studio" style="text-decoration:none;color:inherit">⎋</a>
+    </div>
+  </header>
+
+  <section id="room-console" class="console">
+    <aside class="rail" aria-label="Tracks">
+      <div class="src-tabs" role="tablist" aria-label="Track list">
+        <button class="src-tab" role="tab" aria-selected="true" data-src="voices">Tracks</button>
+        <button class="src-tab" role="tab" aria-selected="false" data-src="media">Archive</button>
+      </div>
+      <div class="list" data-srclist="voices" id="tracklist"><p class="mini">Add audio files to start. Each file becomes a strip on the board, all starting together. Up to 12.</p></div>
+      <div class="list" data-srclist="media" hidden>
+        <div class="src"><span class="num">⌂</span><span class="name">My stored recordings</span><span class="tag-na">NOT IN TEST</span><span class="sub">The live Editing Studio reads verified takes from the archive</span></div>
+      </div>
+    </aside>
+
+    <div class="stage">
+      <div class="monitors">
+        <div class="mon cue">
+          <div class="mon-head"><span class="mon-label">Cue · your headphones</span><span class="tally cue" id="cue-tag">MIX</span></div>
+          <div class="mon-screen">
+            <div class="now" id="cue-now">Full mix</div>
+            <div class="meter-row"><span>L</span><span class="seg"><i id="cue-l"></i></span><span id="cue-l-db">—</span></div>
+            <div class="meter-row"><span>R</span><span class="seg"><i id="cue-r"></i></span><span id="cue-r-db">—</span></div>
+          </div>
+        </div>
+        <div class="mon air" id="mon-air">
+          <div class="mon-head"><span class="mon-label">Mix · export bus</span><span class="tally">STEREO · 48 kHz / 24-bit</span></div>
+          <div class="mon-screen">
+            <div class="wave" id="wavebox" title="Click to move the playhead"><canvas id="wave" width="1200" height="64" aria-hidden="true"></canvas><span class="playhead" id="ph" style="left:0"></span></div>
+            <div class="meter-row"><span>MIX</span><span class="seg"><i id="mix-m"></i></span><span id="mix-db">—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tx" aria-label="Transport and export">
+        <div class="transport">
+          <button class="tbtn" id="t-back" aria-label="Back to start">⏮</button>
+          <button class="tbtn" id="t-play" aria-pressed="false" aria-label="Play">▶</button>
+          <button class="tbtn" id="t-stop" aria-label="Stop">■</button>
+          <button class="tbtn" id="t-loop" aria-pressed="false" aria-label="Loop">⟲</button>
+        </div>
+        <div class="timer"><span>Position · length <span id="len">00:00</span></span><b class="tc" id="tc">00:00.0</b></div>
+        <span class="spacer"></span>
+        <div id="dl-slot"></div>
+        <button class="airbtn" id="b-air" data-state="off"><span class="lampbig" aria-hidden="true"></span><span class="word">EXPORT</span><span class="hint">Load tracks first</span><span class="fill"></span></button>
+      </div>
+
+      <div class="tools" role="group" aria-label="Console tools">
+        <button class="tool" aria-pressed="true" data-tool="mixing"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 3v18M12 3v18M18 3v18"/><rect x="3.5" y="13" width="5" height="3" rx="1" fill="currentColor"/><rect x="9.5" y="7" width="5" height="3" rx="1" fill="currentColor"/><rect x="15.5" y="15" width="5" height="3" rx="1" fill="currentColor"/></svg>Mixing</button>
+        <button class="tool" aria-pressed="false" data-tool="plugins"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="8" cy="12" r="4"/><circle cx="17" cy="12" r="3"/><path d="M8 8v-4M17 9v-5"/></svg>Plug-ins</button>
+        <button class="tool" aria-pressed="false" data-tool="waveform"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12h3l2-6 3 12 3-9 2 6 2-3h5"/></svg>Waveform</button>
+      </div>
+
+      <section class="drawer" data-panel="mixing">
+        <div class="drawer-head"><h2>Mixing</h2><button class="x" aria-label="Close tools">✕</button></div>
+        <div class="strips" id="strips"></div>
+        <div class="legend">Faders and MUTE go into the export. SOLO changes only what you hear and is left out of the export.</div>
+      </section>
+
+      <section class="drawer" data-panel="plugins" hidden>
+        <div class="drawer-head"><h2>Plug-ins</h2><button class="x" aria-label="Close tools">✕</button></div>
+        <div class="panel2">
+          <div class="plug"><h3>Glue Mix · mix bus</h3><div class="mini">Gentle bus compressor before the limiter. Bypassed by default.</div>
+            <label class="mini">Ratio <select class="dev" id="g-ratio"><option value="2">2:1</option><option value="4">4:1</option></select></label>
+            <label class="mini">Threshold <span id="g-th-v">−18 dB</span><input type="range" id="g-th" min="-40" max="0" step="1" value="-18" style="width:100%"></label>
+            <label class="mini">Makeup <span id="g-mk-v">0 dB</span><input type="range" id="g-mk" min="0" max="12" step="0.5" value="0" style="width:100%"></label>
+            <button class="chip bypass" id="g-byp" aria-pressed="true">Bypassed</button></div>
+          <div class="plug"><h3>Mic model</h3><div class="mini">The eight mic voicings live in the Ensemble engine, which this TEST version can't reach.</div><span class="tag-na">NOT IN TEST</span></div>
+        </div>
+      </section>
+
+      <section class="drawer" data-panel="waveform" hidden>
+        <div class="drawer-head"><h2>Waveform</h2><button class="x" aria-label="Close tools">✕</button></div>
+        <div class="list"><div class="item"><div><div class="k">Cut and trim in Wavacity</div><div class="v">Wavacity is the existing waveform editor. Opens in a new tab.</div></div><a class="chip cy" href="https://wavacity.com" target="_blank" rel="noopener">Open Wavacity</a></div></div>
+      </section>
+    </div>
+  </section>
+
+  <section id="room-backstage" class="cols" hidden>
+    <div class="sect"><h3>Export settings</h3><p>Stereo WAV, 48 kHz, 24-bit. Limiter at about −1 dBFS. Loudness targeting is not in TEST.</p></div>
+    <div class="sect"><h3>Headphones and output</h3><p>Uses this computer's default sound output.</p></div>
+    <div class="sect"><h3>Limits</h3><p>Up to 12 strips. Long files use a lot of memory in the tab.</p></div>
+  </section>
+
+  <section id="room-library" class="cols" hidden>
+    <div class="sect"><h3>Add audio</h3><p>Files from your computer, including takes downloaded from the Recording Booth TEST.</p><label class="chip cy" for="files" style="cursor:pointer">Add audio files</label></div>
+    <div class="sect" style="grid-column:span 2"><h3>Exports this visit</h3><div class="recs" id="recs"><p class="mini">No exports yet.</p></div></div>
+  </section>
+
+  <footer class="status" aria-live="polite">
+    <span class="state off" id="s-air">NOT EXPORTED</span>
+    <span>Strips: <b id="s-n">0</b> of 12</span>
+    <span>Mix: <b id="s-master">—</b></span>
+    <span>48 kHz / 24-bit</span>
+    <span class="legend" style="margin-left:auto">Green = Ready · Amber = working · Cyan = cued</span>
+  </footer>
+</div>
+<script src="engine.js"></script>
+<script>
+(function(){
+  const {Engine,renderStrips,stateButton,shell,seg,fmtDb,fmtTime,wav24,downloadLink,$}=CDB;
+  const e=new Engine(); const master={id:'master',name:'Mix bus',db:0,muted:false,available:true,model:'Limiter −1 dBFS'};
+  shell(); renderStrips(e,$('#strips'),master);
+  const tracks=[]; let dur=0, pos=0, playing=false, t0=0, sources=[];
+  const tc=s=>fmtTime(s)+'.'+Math.floor((s%1)*10);
+
+  async function addFiles(list){
+    await e.start(); e.setHeadphones(true);
+    for(const f of list){ if(tracks.length>=12) break;
+      try{ const buf=await e.ctx.decodeAudioData(await f.arrayBuffer());
+        const name=f.name.replace(/\.[^.]+$/,''); const short=name.length>16?name.slice(0,15)+'…':name;
+        const ch=e.addChannel({id:'t'+tracks.length,name:short,model:(buf.numberOfChannels>1?'Stereo':'Mono')+' · '+fmtTime(buf.duration)});
+        tracks.push({ch,buf,name}); dur=Math.max(dur,buf.duration);
+      }catch(err){ alertRow(f.name+' could not be read'); }
+    }
+    renderStrips(e,$('#strips'),master); drawRail(); drawWave(); refresh();
+  }
+  function alertRow(t){const p=document.createElement('p');p.className='notice';p.textContent=t;$('#tracklist').appendChild(p)}
+  function drawRail(){
+    $('#tracklist').innerHTML=tracks.map((t,i)=>`<div class="src"><span class="num">${i+1}</span><span class="name">${t.ch.name}</span><span class="tally">IN MIX</span><span class="sub">${t.name} · ${fmtTime(t.buf.duration)}</span></div>`).join('')+
+      (tracks.length<12?'<label class="chip cy" for="files" style="cursor:pointer;text-align:center">Add audio files</label>':'');
+    $('#proj').textContent=tracks.length?tracks.length+' track'+(tracks.length>1?'s':'')+' · '+fmtTime(dur):'No tracks loaded';
+    $('#s-n').textContent=tracks.length; $('#len').textContent=fmtTime(dur);
+  }
+  function drawWave(){
+    const c=$('#wave'),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);if(!tracks.length)return;
+    g.fillStyle='#29d3ee';const W=c.width,H=c.height;
+    const peaks=new Float32Array(W);
+    tracks.forEach(t=>{const d=t.buf.getChannelData(0),per=(dur*t.buf.sampleRate)/W;
+      for(let x=0;x<W;x++){const a=Math.floor(x*per),b=Math.min(d.length,Math.floor((x+1)*per));let m=0;for(let i=a;i<b;i+=8){const v=Math.abs(d[i]);if(v>m)m=v}peaks[x]=Math.max(peaks[x],m)}});
+    for(let x=0;x<W;x++){const h=Math.max(1,peaks[x]*H/2);g.fillRect(x,H/2-h,1,h*2)}
+  }
+  function curPos(){return playing?e.ctx.currentTime-t0:pos}
+  function play(){ if(!tracks.length) return; if(e.ctx.state!=='running') e.ctx.resume();
+    if(pos>=dur) pos=0; sources=tracks.map(t=>{const s=e.ctx.createBufferSource();s.buffer=t.buf;s.connect(t.ch.input);if(pos<t.buf.duration)s.start(0,pos);return s});
+    t0=e.ctx.currentTime-pos; playing=true; refresh(); }
+  function halt(){ sources.forEach(s=>{try{s.stop()}catch(err){}}); sources=[]; playing=false; }
+  function pause(){ pos=curPos(); halt(); refresh(); }
+  function seek(p){ const was=playing; if(was) halt(); pos=Math.max(0,Math.min(dur,p)); if(was) play(); else refresh(); }
+  function refresh(){ $('#t-play').textContent=playing?'❚❚':'▶'; $('#t-play').setAttribute('aria-pressed',playing); $('#t-play').setAttribute('aria-label',playing?'Pause':'Play');
+    if(exp.state==='off') exp.set('off', tracks.length?'Press to render a 24-bit WAV of the mix':'Load tracks first'); }
+  $('#t-play').addEventListener('click',()=>playing?pause():play());
+  $('#t-stop').addEventListener('click',()=>{halt();pos=0;refresh()});
+  $('#t-back').addEventListener('click',()=>seek(0));
+  $('#t-loop').addEventListener('click',ev=>{const b=ev.currentTarget;b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')!=='true')});
+  $('#wavebox').addEventListener('click',ev=>{if(!dur)return;const r=ev.currentTarget.getBoundingClientRect();seek((ev.clientX-r.left)/r.width*dur)});
+  $('#files').addEventListener('change',ev=>{addFiles([...ev.target.files]);ev.target.value=''});
+  (function loop(){ if(e.ctx){ let p=curPos();
+      if(playing&&p>=dur){ halt(); if($('#t-loop').getAttribute('aria-pressed')==='true'){pos=0;play();}else{pos=dur;refresh();} p=curPos(); }
+      $('#tc').textContent=tc(p); $('#ph').style.left=(dur?p/dur*100:0)+'%'; }
+    requestAnimationFrame(loop); })();
+  e.meterHooks.push(x=>{ seg($('#cue-l'),x.monLevel); seg($('#cue-r'),x.monLevel); $('#cue-l-db').textContent=fmtDb(x.monLevel); $('#cue-r-db').textContent=fmtDb(x.monLevel);
+    seg($('#mix-m'),x.masterLevel); $('#mix-db').textContent=fmtDb(x.masterLevel); $('#s-master').textContent=fmtDb(x.masterLevel);
+    const solo=x.channels.filter(c=>c.soloed).map(c=>c.name); $('#cue-now').textContent=solo.length?'SOLO: '+solo.join(', '):'Full mix'; $('#cue-tag').textContent=solo.length?'SOLO':'MIX'; });
+
+  // Glue Mix
+  const glue={bypass:true,ratio:2,threshold:-18,makeup:0};
+  const applyGlue=async()=>{await e.start();e.setGlue(glue);master.model=glue.bypass?'Limiter −1 dBFS':'Glue '+glue.ratio+':1 · limiter'};
+  $('#g-byp').addEventListener('click',ev=>{glue.bypass=!glue.bypass;ev.target.setAttribute('aria-pressed',glue.bypass);ev.target.textContent=glue.bypass?'Bypassed':'Active';applyGlue()});
+  $('#g-ratio').addEventListener('change',ev=>{glue.ratio=+ev.target.value;applyGlue()});
+  $('#g-th').addEventListener('input',ev=>{glue.threshold=+ev.target.value;$('#g-th-v').textContent=glue.threshold+' dB';applyGlue()});
+  $('#g-mk').addEventListener('input',ev=>{glue.makeup=+ev.target.value;$('#g-mk-v').textContent=glue.makeup+' dB';applyGlue()});
+
+  // Offline export (faders, MUTE, Glue, limiter, master; SOLO ignored)
+  async function render(){
+    const sr=48000,len=Math.ceil(dur*sr),oc=new OfflineAudioContext(2,len,sr);
+    const bus=oc.createGain(),out=oc.createGain();
+    if(glue.bypass){bus.connect(out)}else{const c=oc.createDynamicsCompressor();c.threshold.value=glue.threshold;c.ratio.value=glue.ratio;c.attack.value=0.01;c.release.value=0.25;c.knee.value=6;const mk=oc.createGain();mk.gain.value=Math.pow(10,glue.makeup/20);bus.connect(c).connect(mk).connect(out)}
+    const lim=oc.createDynamicsCompressor();lim.threshold.value=-1.5;lim.knee.value=0;lim.ratio.value=20;lim.attack.value=0.002;lim.release.value=0.1;
+    const m=oc.createGain();m.gain.value=master.muted?0:(master.db<=-60?0:Math.pow(10,(e.masterDb||0)/20));
+    out.connect(lim).connect(m).connect(oc.destination);
+    tracks.forEach(t=>{ if(t.ch.muted) return; const s=oc.createBufferSource();s.buffer=t.buf;const g=oc.createGain();g.gain.value=t.ch.db<=-60?0:Math.pow(10,t.ch.db/20);s.connect(g).connect(bus);s.start(0); });
+    const r=await oc.startRendering(); return wav24([r.getChannelData(0),r.getChannelData(1)],sr);
+  }
+  let lastBlob=null, n=0, pulse=null;
+  const exp=stateButton($('#b-air'),{initial:'off',states:{
+    off:{word:'EXPORT',hint:'Load tracks first',look:'off',onTap:async a=>{ if(!tracks.length) return; a.set('work');
+        const fill=$('#b-air .fill');let w=0;pulse=setInterval(()=>{w=(w+4)%100;fill.style.width=w+'%'},60);
+        try{ lastBlob=await render(); n++; clearInterval(pulse); fill.style.width='0'; a.set('done'); addExport(lastBlob);}catch(err){clearInterval(pulse);fill.style.width='0';a.set('off','Export failed: '+err.message)} }},
+    work:{word:'RENDERING',hint:'Keep this tab open',look:'blocked'},
+    done:{word:'DOWNLOAD READY',hint:'Press to save the WAV · then press again for a new export',look:'ready',onTap:a=>{ const l=$('#dl-slot a'); if(l){ l.click(); a.set('saved'); } }},
+    saved:{word:'SAVED',hint:'Press for a new export',look:'off',onTap:a=>a.set('off','Press to render a 24-bit WAV of the mix')}
+  },onEnter:s=>{ const sa=$('#s-air'); sa.className='state '+(s==='done'?'rdy':'off'); sa.textContent=s==='work'?'RENDERING':s==='done'?'EXPORT READY':s==='saved'?'EXPORT SAVED':'NOT EXPORTED'; }});
+  function addExport(blob){
+    const name='Editing-Studio-mix-'+n+'.wav';
+    const slot=$('#dl-slot'); slot.innerHTML=''; const a=downloadLink(blob,name); a.textContent='Download mix '+n; slot.appendChild(a);
+    const box=$('#recs'); if(box.querySelector('p.mini')) box.innerHTML='';
+    const row=document.createElement('div'); row.className='item'; row.innerHTML=`<div><div class="k">Mix ${n}</div><div class="v">${fmtTime(dur)} · WAV 48 kHz / 24-bit · ${(blob.size/1048576).toFixed(1)} MB</div></div>`;
+    row.appendChild(downloadLink(blob,name)); box.prepend(row);
+  }
+  window.addEventListener('beforeunload',ev=>{ if(tracks.length){ ev.preventDefault(); ev.returnValue=''; } });
+  refresh();
+})();
+</script>
+</body></html>
